@@ -11,7 +11,6 @@ function readFile(filename) {
 
 function searchFile(data) {
     return function (content) {
-        console.log(`Searching in ${data.filename}`);
         var match = content.match(data.regex);
         // linesMatch = content.match(data.lineRegEx)
 
