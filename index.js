@@ -10,15 +10,14 @@ function readFile(filename) {
 }
 
 function searchFile(data) {
-    return function(content) {
-
-        var match = content.match(data.regex),
-            linesMatch = content.match(data.lineRegEx)
+    return function (content) {
+        console.log(`Searching in ${data.filename}`);
+        var match = content.match(data.regex);
+        // linesMatch = content.match(data.lineRegEx)
 
         return {
             filename: data.filename,
             match: match,
-            lines: linesMatch
         };
     };
 }
@@ -67,7 +66,7 @@ function getMatchedFiles(pattern, files) {
 }
 
 function getResults(content) {
-    var results = {}
+    var results = []
 
     for (var i = 0; i < content.length; i++) {
         var fileMatch = content[i].value;
@@ -75,7 +74,6 @@ function getResults(content) {
             results[fileMatch.filename] = {
                 matches: fileMatch.match,
                 count: fileMatch.match.length,
-                line: fileMatch.lines
             };
         }
     }
@@ -83,32 +81,32 @@ function getResults(content) {
     return results;
 }
 
-exports.find = function(pattern, directory, fileFilter) {
+exports.find = function (pattern, directory, fileFilter) {
     var deferred = Q.defer()
     find
-    .file(getFileFilter(fileFilter), directory, function(files) {
-        Q.allSettled(getMatchedFiles(pattern, files))
-        .then(function (content) {
-            deferred.resolve(getResults(content));
+        .file(getFileFilter(fileFilter), directory, function (files) {
+            Q.allSettled(getMatchedFiles(pattern, files))
+                .then(function (content) {
+                    deferred.resolve(getResults(content));
+                })
+                .done();
         })
-        .done();
-    })
-    .error(function (err){
-        deferred.reject(err)
-    });
+        .error(function (err) {
+            deferred.reject(err)
+        });
     return deferred.promise;
 };
 
-exports.findSync = function(pattern, directory, fileFilter) {
+exports.findSync = function (pattern, directory, fileFilter) {
     var deferred = Q.defer();
     var files;
     try {
         files = find.fileSync(getFileFilter(fileFilter), directory);
         Q.allSettled(getMatchedFiles(pattern, files))
-        .then(function (content) {
-            deferred.resolve(getResults(content));
-        })
-        .done();
+            .then(function (content) {
+                deferred.resolve(getResults(content));
+            })
+            .done();
     } catch (err) {
         deferred.reject(err)
     }
